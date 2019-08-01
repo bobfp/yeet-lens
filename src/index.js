@@ -20,22 +20,50 @@ export const indexSetter = (i, arg, state) => {
     return item;
   });
 };
-export const indexLens = [indexGetter, indexSetter];
+export const indexLens = i => [
+  indexGetter(i),
+  (arg, state) => indexSetter(i, arg, state)
+];
 
 // OBJECT
 export const propGetter = key => state => rootGetter(state[key]);
-export const propSetter = (key, arg, state) => ({
-  ...state,
-  [key]: rootSetter(arg, state[key])
-});
-export const propLens = [propGetter, propSetter];
+export const propSetter = (key, arg, state) => {
+  return {
+    ...state,
+    [key]: rootSetter(arg, state[key])
+  };
+};
+export const propLens = prop => [
+  propGetter(prop),
+  (arg, state) => propSetter(prop, arg, state)
+];
 
 // PATH
 //
 export const pathGetter = path => state => get(state, path, undefined);
 export const pathSetter = (path, arg, state) =>
   set(state, path, arg, undefined);
+export const pathLens = path => [
+  pathGetter(path),
+  (arg, state) => pathSetter(path, arg, state)
+];
 
+// COMPOSE
+export const composeLens = (...lensList) => {
+  const combineLenses = (lensA, lensB) => {
+    const [aGetter, aSetter] = lensA;
+    const [bGetter, bSetter] = lensB;
+    return [
+      state => bGetter(aGetter(state)),
+      (arg, state) => {
+        return aSetter(bSetter(arg, aGetter(state)), state);
+      }
+    ];
+  };
+  return lensList.reduce(combineLenses);
+};
+
+// UTILS
 const stringToPath = function(path) {
   // If the path isn't a string, return it
   if (typeof path !== "string") return path;

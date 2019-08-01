@@ -53,17 +53,13 @@ describe("complex", () => {
       expectedState
     );
   });
-  test("compose getter", () => {
-    const aGetter = L.propGetter("a");
-    const bGetter = L.propGetter("b");
-    const headGetter = L.indexGetter(0);
-    const cGetter = L.propGetter("c");
-    const composedGetter = L.composeGetter(
-      aGetter,
-      bGetter,
-      headGetter,
-      cGetter
-    );
-    expect(composedGetter(atomState)).toEqual("cat");
+  test("compose lens", () => {
+    const expectedState = { a: 1, b: [{ c: "dog" }] };
+    const bLens = L.propLens("b");
+    const headLens = L.indexLens(0);
+    const cLens = L.propLens("c");
+    const composedLens = L.composeLens(bLens, headLens, cLens);
+    expect(composedLens[0](atomState)).toEqual("cat");
+    expect(composedLens[1]("dog", atomState)).toEqual(expectedState);
   });
 });
