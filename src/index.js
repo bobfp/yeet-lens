@@ -25,6 +25,17 @@ export const indexLens = i => [
   (arg, state) => indexSetter(i, arg, state)
 ];
 
+export const itemSetter = setter => index => newItem => {
+  setter(l =>
+    l.map((item, i) => {
+      if (index === i) {
+        return typeof newItem === "function" ? newItem(item) : newItem;
+      }
+      return item;
+    })
+  );
+};
+
 // OBJECT
 export const propGetter = key => state => rootGetter(state[key]);
 export const propSetter = (key, arg, state) => {
@@ -37,6 +48,13 @@ export const propLens = prop => [
   propGetter(prop),
   (arg, state) => propSetter(prop, arg, state)
 ];
+
+export const keySetter = setter => key => itemArg => {
+  return setter(o => {
+    const newItem = typeof itemArg === "function" ? itemArg(o[key]) : itemArg;
+    return { ...o, [key]: newItem };
+  });
+};
 
 // PATH
 //
